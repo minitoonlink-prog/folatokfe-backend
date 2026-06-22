@@ -1,4 +1,4 @@
-package com.mycompany.folatokfe.backend.config;
+package com.mycompany.folatokfe.backend.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,29 +60,31 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
+@Bean
+public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
 
-        List<String> origins = Arrays.stream(allowedOriginsRaw.split(","))
-                .map(String::trim).toList();
-        config.setAllowedOrigins(origins);
+    // Forzar origen exacto de GitHub Pages
+    config.setAllowedOrigins(List.of("https://minitoonlink-prog.github.io"));
 
-        List<String> methods = Arrays.stream(allowedMethodsRaw.split(","))
-                .map(String::trim).toList();
-        config.setAllowedMethods(methods);
+    // Permitir preflight y métodos reales
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        config.setAllowedHeaders(allowedHeaders.equals("*")
-                ? List.of("*")
-                : Arrays.asList(allowedHeaders.split(",")));
-        config.setAllowCredentials(allowCredentials);
-        config.setMaxAge(3600L);
+    // Permitir cualquier header que mande el navegador
+    config.setAllowedHeaders(List.of("*"));
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
+    // Opcional: exponer Authorization
+    config.setExposedHeaders(List.of("Authorization"));
 
+    // JWT por header => false
+    config.setAllowCredentials(false);
+
+    config.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+}
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
