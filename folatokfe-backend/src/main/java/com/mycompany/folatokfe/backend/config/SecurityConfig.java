@@ -1,11 +1,11 @@
 package com.mycompany.folatokfe.backend.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -18,7 +18,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -28,24 +27,10 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    @Value("${cors.allowed-origins}")
-    private String allowedOriginsRaw;
-
-    @Value("${cors.allowed-methods}")
-    private String allowedMethodsRaw;
-
-    @Value("${cors.allowed-headers}")
-    private String allowedHeaders;
-
-    @Value("${cors.allow-credentials}")
-    private boolean allowCredentials;
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // CSRF disabled: this is a stateless REST API that uses JWT ******
-            // not session cookies, so CSRF attacks are not applicable.
+            .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -60,31 +45,29 @@ public class SecurityConfig {
         return http.build();
     }
 
-@Bean
-public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration config = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
 
-    // Forzar origen exacto de GitHub Pages
-    config.setAllowedOrigins(List.of("https://minitoonlink-prog.github.io"));
+        // Origin REAL de GitHub Pages (NO incluir /folatokfe-frontend/)
+        config.setAllowedOrigins(List.of("https://minitoonlink-prog.github.io"));
 
-    // Permitir preflight y métodos reales
-    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        // Preflight + métodos de la API
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-    // Permitir cualquier header que mande el navegador
-    config.setAllowedHeaders(List.of("*"));
+        // Permitir headers de navegador y auth
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("Authorization"));
 
-    // Opcional: exponer Authorization
-    config.setExposedHeaders(List.of("Authorization"));
+        // JWT por header => false
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
 
-    // JWT por header => false
-    config.setAllowCredentials(false);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
 
-    config.setMaxAge(3600L);
-
-    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", config);
-    return source;
-}
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
