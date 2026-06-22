@@ -26,6 +26,13 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        // PERMITIR TODAS LAS SOLICITUDES OPTIONS (preflight)
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Extraer token del header Authorization
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String email = null;
@@ -34,7 +41,9 @@ public class JwtFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             try {
                 email = jwtUtil.extractEmail(token);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+                // Token inválido o expirado
+            }
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -50,3 +59,4 @@ public class JwtFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 }
+
