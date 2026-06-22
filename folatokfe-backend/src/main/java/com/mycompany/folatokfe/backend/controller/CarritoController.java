@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/carrito")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${cors.allowed-origins}")
+//@CrossOrigin(origins = "${cors.allowed-origins}")
 public class CarritoController {
 
     private final CarritoService carritoService;
