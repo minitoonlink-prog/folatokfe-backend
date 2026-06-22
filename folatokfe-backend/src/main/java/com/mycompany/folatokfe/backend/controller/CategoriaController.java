@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categorias")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "${cors.allowed-origins}")
+//@CrossOrigin(origins = "${cors.allowed-origins}")
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
