@@ -49,8 +49,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Origin REAL de GitHub Pages (NO incluir /folatokfe-frontend/)
-        config.setAllowedOrigins(List.of("https://minitoonlink-prog.github.io"));
+        // Orígenes permitidos para desarrollo local y despliegue en GitHub Pages.
+        config.setAllowedOrigins(List.of(
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "http://localhost:5501",
+            "http://127.0.0.1:5501",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080",
+            "https://minitoonlink-prog.github.io"
+        ));
 
         // Preflight + métodos de la API
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
