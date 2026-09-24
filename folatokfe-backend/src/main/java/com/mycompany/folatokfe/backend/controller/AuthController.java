@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-//@CrossOrigin(origins = "${cors.allowed-origins}")
+//@CrossOrigin(origins = "*") // Temporal para pruebas locales
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        System.out.println("📩 Login request para: " + request.getEmail());
         return ResponseEntity.ok(authService.login(request));
     }
 
