@@ -55,6 +55,7 @@ public class SecurityConfig {
 
         config.setAllowedOrigins(List.of(
             "https://minitoonlink-prog.github.io",
+            "https://saint-washstand-closable.ngrok-free.dev",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:5173",
@@ -68,7 +69,7 @@ public class SecurityConfig {
         ));
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(false);
         config.setMaxAge(3600L);
@@ -83,8 +84,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowedOrigins(List.of(
             "https://minitoonlink-prog.github.io",
+            "https://saint-washstand-closable.ngrok-free.dev",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:5173",
@@ -96,8 +99,9 @@ public class SecurityConfig {
             "http://localhost:8080",
             "http://127.0.0.1:8080"
         ));
+
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"));
         config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(false);
         config.setMaxAge(3600L);
