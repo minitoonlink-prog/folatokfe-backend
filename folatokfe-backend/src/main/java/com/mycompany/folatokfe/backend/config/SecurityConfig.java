@@ -1,8 +1,10 @@
 package com.mycompany.folatokfe.backend.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
 
@@ -30,12 +33,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Activa la integración de CORS de Spring Security usando el bean definido abajo.
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Las peticiones preflight no deben requerir JWT.
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
@@ -48,12 +49,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public FilterRegistrationBean<CorsFilter> corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
 
-        // Frontend publicado en GitHub Pages y servidores locales de desarrollo.
-        // El origen no incluye la ruta del repositorio: CORS compara únicamente
-        // esquema + host + puerto.
         config.setAllowedOrigins(List.of(
             "https://minitoonlink-prog.github.io",
             "http://localhost:3000",
@@ -68,14 +67,38 @@ public class SecurityConfig {
             "http://127.0.0.1:8080"
         ));
 
-        // Métodos usados por la API y por las peticiones preflight.
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // Authorization es necesario para enviar el JWT.
-        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "Accept", "Origin"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
         config.setExposedHeaders(List.of("Authorization"));
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
 
-        // El JWT se envía en Authorization, no mediante cookies.
+        source.registerCorsConfiguration("/**", config);
+
+        FilterRegistrationBean<CorsFilter> registration = new FilterRegistrationBean<>(new CorsFilter(source));
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of(
+            "https://minitoonlink-prog.github.io",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://localhost:5500",
+            "http://127.0.0.1:5500",
+            "http://localhost:5501",
+            "http://127.0.0.1:5501",
+            "http://localhost:8080",
+            "http://127.0.0.1:8080"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "Origin"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(false);
         config.setMaxAge(3600L);
 
