@@ -30,10 +30,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // Activa la integración de CORS de Spring Security usando el bean definido abajo.
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Las peticiones preflight no deben requerir JWT.
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
@@ -49,25 +51,31 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Orígenes permitidos para desarrollo local y despliegue en GitHub Pages.
+        // Frontend publicado en GitHub Pages y servidores locales de desarrollo.
+        // El origen no incluye la ruta del repositorio: CORS compara únicamente
+        // esquema + host + puerto.
         config.setAllowedOrigins(List.of(
+            "https://minitoonlink-prog.github.io",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
             "http://localhost:5500",
             "http://127.0.0.1:5500",
             "http://localhost:5501",
             "http://127.0.0.1:5501",
             "http://localhost:8080",
-            "http://127.0.0.1:8080",
-            "https://minitoonlink-prog.github.io"
+            "http://127.0.0.1:8080"
         ));
 
-        // Preflight + métodos de la API
+        // Métodos usados por la API y por las peticiones preflight.
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        // Permitir headers de navegador y auth
-        config.setAllowedHeaders(List.of("*"));
+        // Authorization es necesario para enviar el JWT.
+        config.setAllowedHeaders(List.of("Content-Type", "Authorization", "Accept", "Origin"));
         config.setExposedHeaders(List.of("Authorization"));
 
-        // JWT por header => false
+        // El JWT se envía en Authorization, no mediante cookies.
         config.setAllowCredentials(false);
         config.setMaxAge(3600L);
 
