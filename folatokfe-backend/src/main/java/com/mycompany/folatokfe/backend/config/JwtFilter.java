@@ -26,7 +26,8 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // Permitir preflight OPTIONS para que el navegador pueda hacer CORS.
+
+        // Permitir el preflight CORS antes de validar JWT.
         if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
             response.setHeader("Access-Control-Allow-Origin", "*");
             response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
